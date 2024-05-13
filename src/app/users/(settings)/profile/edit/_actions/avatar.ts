@@ -4,6 +4,7 @@ import db from '@/db/prisma';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
 import fs from 'fs/promises';
+import path from 'path';
 import { revalidatePath } from 'next/cache';
 
 const fileSchema = z.instanceof(File, { message: 'Required' });
@@ -43,7 +44,8 @@ export async function updateUserAvatar(
   const prevImage = user.image;
 
   try {
-    await fs.mkdir('public/avatars', { recursive: true });
+    const directoryPath = path.join(__dirname, 'public', 'avatars');
+    await fs.mkdir(directoryPath, { recursive: true });
   } catch (error) {
     console.error('Error creating directories:', error);
   }
