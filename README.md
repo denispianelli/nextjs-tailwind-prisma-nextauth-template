@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🚀 Next.js Tailwind Prisma NextAuth Shadcn/ui Template
 
-## Getting Started
+This template provides a robust starting point for building full-stack web
+applications with **Next.js** 14 using App Router, **Tailwind CSS**, **Prisma**,
+**NextAuth.js** and **Shadcn/ui**.
 
-First, run the development server:
+## 🔥 **Template Features:**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Light/Dark Mode:** Switch between light and dark mode seamlessly for optimal readability and user experience.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Fully Responsive:** Enjoy a consistent user experience across devices with a fully responsive design that adapts to different screen sizes.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Authentication:**
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+  - **Login and Sign Up:** Easily register for a new account or log in with existing credentials.
+  - **OAuth Integration:** Authenticate using OAuth providers such as Google or GitHub for streamlined access.
+  - **Email Verification:** Verify email addresses through one-time passwords sent via email for added security.
 
-## Learn More
+- **Rate-Limited Verification:** Prevent abuse by limiting the number of verification code attempts to 5 per 10 minutes using Redis rate limiting.
 
-To learn more about Next.js, take a look at the following resources:
+- **Forgot Password:** Recover access to your account with a reset password link sent directly to your email address.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Account Settings:**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+  Take control of your account with a settings page that allows you to:
 
-## Deploy on Vercel
+  - Update personal information.
+  - Change your profile picture.
+  - Change your password securely.
+  - Permanently delete your account if needed.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 🔧 Customizable and Extendable
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- Tailor the template to your specific needs and extend functionality with ease to create a personalized experience for your users.
+  Enhance your UI with [shadcn/ui](https://github.com/shadcn/ui)'s customizable
+  and reusable UI components.
+- Extend functionality by integrating additional features or third-party APIs.
+
+🌟 **Star this Repository:**
+
+If you find these features useful, please consider starring the repository to show your support and help others discover it!
+
+🚀 **Happy Coding!**
+
+---
+
+## 🛠️ Setup
+
+Follow these steps to set up the template and start building your application:
