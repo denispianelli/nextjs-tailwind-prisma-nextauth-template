@@ -42,23 +42,41 @@ export async function updateUserAvatar(
 
   const prevImage = user.image;
 
-  await fs.mkdir('public/avatars', { recursive: true });
-  const imagePath = `/avatars/${crypto.randomUUID()}-${image.name}`;
-  await fs.writeFile(
-    `public${imagePath}`,
-    Buffer.from(await image.arrayBuffer()),
-  );
-
-  if (prevImage?.startsWith('/avatars') && prevImage !== imagePath) {
-    await fs.unlink(`public${prevImage}`);
+  try {
+    await fs.mkdir('public/avatars', { recursive: true });
+  } catch (error) {
+    console.error('Error creating directories:', error);
   }
 
-  await db.user.update({
-    where: { id },
-    data: {
-      image: imagePath,
-    },
-  });
+  const imagePath = `/avatars/${crypto.randomUUID()}-${image.name}`;
+
+  try {
+    await fs.writeFile(
+      `public${imagePath}`,
+      Buffer.from(await image.arrayBuffer()),
+    );
+  } catch (error) {
+    console.error('Error saving file:', error);
+  }
+
+  try {
+    if (prevImage?.startsWith('/avatars') && prevImage !== imagePath) {
+      await fs.unlink(`public${prevImage}`);
+    }
+  } catch (error) {
+    console.error('Error deleting file:', error);
+  }
+
+  try {
+    await db.user.update({
+      where: { id },
+      data: {
+        image: imagePath,
+      },
+    });
+  } catch (error) {
+    console.error('Error updating user:', error);
+  }
 
   revalidatePath('/users/profile/edit');
 }
