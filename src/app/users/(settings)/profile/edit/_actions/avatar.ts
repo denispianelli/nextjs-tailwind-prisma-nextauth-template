@@ -44,7 +44,8 @@ export async function updateUserAvatar(
   const prevImage = user.image;
 
   try {
-    const directoryPath = path.join(__dirname, 'public', 'avatars');
+    const directoryPath = path.join('public', 'avatars');
+    console.log('directoryPath:', directoryPath);
     await fs.mkdir(directoryPath, { recursive: true });
   } catch (error) {
     console.error('Error creating directories:', error);
