@@ -27,7 +27,6 @@ export type User = {
 export function ProfileForm({ user }: { user: User }) {
   const updateProfileWithId = updateProfile.bind(null, user.id);
   const [state, action] = useFormState(updateProfileWithId, undefined);
-  console.log('ProfileForm ~ state:', state);
 
   return (
     <div className="grid gap-6">
