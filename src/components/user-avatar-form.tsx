@@ -8,15 +8,13 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
-import { useRef } from 'react';
-import {
-  removeUserAvatar,
-  updateUserAvatar,
-} from '@/app/users/(settings)/profile/edit/_actions/avatar';
-import { useFormState } from 'react-dom';
+import { useToast } from '@/components/ui/use-toast';
+
+import { removeUserAvatar } from '@/app/users/(settings)/profile/edit/_actions/avatar';
 
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
+import { UploadButton } from '@/lib/utils';
 
 export type User = {
   id: string;
@@ -28,32 +26,46 @@ export type User = {
 };
 
 export function UserAvatarForm({ user }: { user: User }) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const formRef = useRef<HTMLFormElement | null>(null);
-
-  const updateUserAvatarWithId = updateUserAvatar.bind(null, user.id);
-  const [state, action] = useFormState(updateUserAvatarWithId, undefined);
+  const { toast } = useToast();
 
   const router = useRouter();
 
-  const handleEditClick = async () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = () => {
-    formRef.current?.requestSubmit();
+  const handleUploadClick = (res: any) => {
+    toast({
+      title: 'Success',
+      description: 'Avatar uploaded',
+    });
     router.refresh();
   };
 
   const handleRemoveClick = async () => {
     await removeUserAvatar(user.id);
+    toast({
+      title: 'Success',
+      description: 'Avatar removed',
+    });
     router.refresh();
   };
 
+  const handleUploadError = (error: Error) => {
+    let errorMessage;
+
+    if (error.message.includes('FileSizeMismatch')) {
+      errorMessage = 'File is too large';
+    }
+
+    if (error.message.includes('InvalidFileType')) {
+      errorMessage = 'Invalid file type';
+    }
+    toast({
+      variant: 'destructive',
+      title: 'Error',
+      description: `${errorMessage}`,
+    });
+  };
+
   return (
-    <form ref={formRef} action={action} className="grid gap-4">
+    <div className="grid gap-4">
       <Card>
         <CardHeader>
           <CardTitle>Avatar</CardTitle>
@@ -64,25 +76,19 @@ export function UserAvatarForm({ user }: { user: User }) {
             alt="Avatar"
             width={100}
             height={100}
-            className="rounded-full"
-          />
-          {state?.image && (
-            <div className="text-xs text-destructive">{state.image}</div>
-          )}
-          <input
-            type="file"
-            className="hidden"
-            name="image"
-            ref={fileInputRef}
-            accept="image/*"
-            onChange={handleFileChange}
+            sizes="100px"
+            className="aspect-square rounded-full"
+            priority={true}
           />
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
           <div className="flex gap-2">
-            <Button type="button" onClick={handleEditClick}>
-              Edit
-            </Button>
+            <UploadButton
+              className="ut-button:bg-primary ut-button:text-primary-foreground ut-button:py-2 ut-button:hover:bg-primary/90 ut-button:px-4 ut-button:h-10 ut-button:text-sm"
+              endpoint="imageUploader"
+              onClientUploadComplete={handleUploadClick}
+              onUploadError={handleUploadError}
+            />
             <Button
               type="button"
               variant="destructive"
@@ -93,6 +99,6 @@ export function UserAvatarForm({ user }: { user: User }) {
           </div>
         </CardFooter>{' '}
       </Card>
-    </form>
+    </div>
   );
 }
