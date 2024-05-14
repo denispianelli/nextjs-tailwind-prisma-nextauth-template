@@ -40,8 +40,6 @@ export function DeleteAccount({ user }: { user: User }) {
   const { toast } = useToast();
 
   const handleContinueButtonClick = async () => {
-    console.log('Delete account');
-
     const result = await deleteAccount(user.id);
     toast({
       description: `${result.message}`,
