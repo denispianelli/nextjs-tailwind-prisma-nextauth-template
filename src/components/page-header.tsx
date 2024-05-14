@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Menu, Moon, Package2, Search, User } from 'lucide-react';
+import { LogOut, Menu, Package2, Search, Settings, User } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,12 +9,10 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { auth } from '../auth';
+import { auth, signOut } from '../auth';
 import { ModeToggleButton } from './mode-toggle-button';
 
 import { UserMenu } from './user-menu';
-import { Switch } from './ui/switch';
-import { Label } from './ui/label';
 import { Separator } from './ui/separator';
 import { ModeToggleSwitch } from './mode-toggle-switch';
 
@@ -123,15 +121,40 @@ export async function Header() {
             <Separator />
             <ModeToggleSwitch />
             <Separator />
-            <SheetClose asChild>
-              <Link
-                href="/login"
-                className="flex items-center justify-between text-sm text-muted-foreground hover:text-foreground"
-              >
-                Login
-                <User size={20} />
-              </Link>
-            </SheetClose>
+            {session ? (
+              <>
+                <SheetClose asChild>
+                  <Link
+                    href="/users/profile/edit"
+                    className="flex items-center justify-between text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Settings
+                    <Settings size={20} />
+                  </Link>
+                </SheetClose>
+
+                <form
+                  className="flex items-center justify-between text-sm text-muted-foreground hover:text-foreground"
+                  action={async () => {
+                    'use server';
+                    await signOut();
+                  }}
+                >
+                  <button>Logout</button>
+                  <LogOut size={20} />
+                </form>
+              </>
+            ) : (
+              <SheetClose asChild>
+                <Link
+                  href="/login"
+                  className="flex items-center justify-between text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Login
+                  <User size={20} />
+                </Link>
+              </SheetClose>
+            )}
           </nav>
         </SheetContent>
       </Sheet>

@@ -10,12 +10,12 @@ import {
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { useFormState } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { forgotPassword } from '@/app/users/password_reset/_actions/forgot-password';
 import { useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
-import { CircleCheck } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export function ForgotPasswordForm() {
   const [state, action] = useFormState(forgotPassword, undefined);
@@ -26,7 +26,7 @@ export function ForgotPasswordForm() {
   useEffect(() => {
     if (state?.message) {
       toast({
-        description: <ToastMessage state={state} />,
+        description: state?.message,
       });
       setTimeout(() => {
         router.push('/login');
@@ -62,7 +62,7 @@ export function ForgotPasswordForm() {
                 <span className="text-xs">&nbsp;</span>
               )}
             </div>
-            <Button type="submit">Submit</Button>
+            <ForgotPasswordButton />
           </form>
         </div>
       </CardContent>
@@ -70,11 +70,11 @@ export function ForgotPasswordForm() {
   );
 }
 
-function ToastMessage({ state }: { state: any }) {
+function ForgotPasswordButton() {
+  const { pending } = useFormStatus();
   return (
-    <div className="flex items-center justify-between gap-2">
-      <CircleCheck width={100} />
-      {state?.message}
-    </div>
+    <Button type="submit" aria-disabled={pending}>
+      {pending ? <Loader2 className="size-6 animate-spin"></Loader2> : 'Submit'}
+    </Button>
   );
 }

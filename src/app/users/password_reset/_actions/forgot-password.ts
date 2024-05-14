@@ -45,9 +45,10 @@ export async function forgotPassword(
   });
 
   if (!user) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     return {
       message:
-        'If the email is associated with an account, a password reset link will be sent.',
+        'You will receive an email with instructions about how to reset your password in a few minutes.',
     };
   }
 

@@ -2,7 +2,7 @@ import { ForgotPasswordForm } from '@/components/forgot-password-form';
 
 export default function Page() {
   return (
-    <main className="flex h-[calc(100vh-64px)] items-center">
+    <main className="flex h-[calc(100vh-64px)] items-center bg-muted/40">
       <ForgotPasswordForm />;
     </main>
   );

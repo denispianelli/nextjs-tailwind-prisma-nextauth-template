@@ -16,10 +16,12 @@ import { useFormState, useFormStatus } from 'react-dom';
 import { resetPassword } from '@/app/users/password_reset/edit/_actions/reset-password';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-export function ResetPasswordForm() {
+export function ResetPasswordForm({ isTokenValid }: { isTokenValid: boolean }) {
   const [state, action] = useFormState(resetPassword, undefined);
+
+  const [countdown, setCountdown] = useState(3);
 
   const router = useRouter();
 
@@ -39,6 +41,44 @@ export function ResetPasswordForm() {
       }, 3000);
     }
   }, [router, state?.message, toast]);
+
+  useEffect(() => {
+    if (isTokenValid) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCountdown((prevCountdown) => prevCountdown - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  if (!isTokenValid) {
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+    clearInterval(timer);
+    setTimeout(() => {
+      router.push('/login');
+    }, 3000);
+
+    return (
+      <Card className="mx-auto max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-xl">Invalid link</CardTitle>
+          <CardDescription>
+            The link is invalid or has expired. Please request a new reset link
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Redirecting to login page in {countdown}...
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="mx-auto max-w-sm">
