@@ -50,7 +50,6 @@ export async function updateProfile(
   const { firstname, lastname, email } = validateFields.data;
 
   const isEmailFree = await isEmailAvailable(email);
-  console.log('isEmailFree:', isEmailFree);
 
   const user = await db.user.findUnique({
     where: { id },
