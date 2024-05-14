@@ -1,5 +1,5 @@
 import { utapi } from '@/app/server/uploadthing';
-import { auth } from '@/auth';
+// import { auth } from '@/auth';
 import db from '@/db/prisma';
 import { notFound } from 'next/navigation';
 import { createUploadthing, type FileRouter } from 'uploadthing/next';
@@ -7,11 +7,13 @@ import { UploadThingError } from 'uploadthing/server';
 
 const f = createUploadthing();
 
-const authentication = async () => {
-  const session = await auth();
+// const authentication = async () => {
+//   const session = await auth();
 
-  return session?.user;
-};
+//   return session?.user;
+// };
+
+const auth = (req: Request) => ({ id: 'clw66gj260000b13h14oiuww7' });
 
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {
@@ -20,7 +22,7 @@ export const ourFileRouter = {
     // Set permissions and file types for this FileRoute
     .middleware(async ({ req }) => {
       // This code runs on your server before upload
-      const user = await authentication(); // Await the user function
+      const user = await auth(req);
 
       // If you throw, the user will not be able to upload
       if (!user) throw new UploadThingError('Unauthorized');
