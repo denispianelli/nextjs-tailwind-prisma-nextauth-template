@@ -1,6 +1,11 @@
 # 🚀 Next.js Tailwind Prisma NextAuth Shadcn/ui Template
 
-This template provides a robust starting point for building full-stack web applications with **Next.js 14** using the App Router, **Tailwind CSS**, **Prisma**, **NextAuth.js**, and **Shadcn/ui**, incorporating an authentication system.
+This template provides a robust starting point for building full-stack web
+applications with **Next.js 14** using the App Router, **Tailwind CSS**,
+**Prisma**, **NextAuth.js**, and **Shadcn/ui**, incorporating an authentication
+system.
+
+## [Live Demo](https://nextjs-tailwind-prisma-nextauth-template.vercel.app)
 
 ## 🔥 **Template Features:**
 
@@ -118,6 +123,10 @@ EMAIL_FROM=your.email@gmail.com
 
 [_source_](https://medium.com/@y.mehnati_49486/how-to-send-an-email-from-your-gmail-account-with-nodemailer-837bf09a7628)
 
+#### Uploadthing
+
+- [Create an account](https://uploadthing.com/) if not already, go to your dashboard and copy paste your API key in the .env file.
+
 #### Prisma
 
 Run a migration to create your db tables
@@ -127,7 +136,7 @@ Run a migration to create your db tables
 
 ```
 
-#### 🛠 Start building your application!
+#### 🛠 Start building your application
 
 ---
 
