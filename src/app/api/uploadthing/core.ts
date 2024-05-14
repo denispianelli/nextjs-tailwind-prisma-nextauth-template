@@ -1,4 +1,8 @@
+import { utapi } from '@/app/server/uploadthing';
 import { auth } from '@/auth';
+import db from '@/db/prisma';
+import { revalidatePath } from 'next/cache';
+import { notFound } from 'next/navigation';
 import { createUploadthing, type FileRouter } from 'uploadthing/next';
 import { UploadThingError } from 'uploadthing/server';
 
@@ -24,9 +28,33 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       // This code RUNS ON YOUR SERVER after upload
-      console.log('Upload complete for userId:', metadata.userId);
+      const id = metadata.userId;
 
-      console.log('file url', file.url);
+      const imageUrl = file.url;
+
+      try {
+        const user = await db.user.findUnique({
+          where: { id },
+        });
+
+        if (!user) return notFound();
+
+        const prevImage = user.image;
+
+        if (prevImage?.startsWith('https://utfs.io')) {
+          const fileKey = prevImage.split('https://utfs.io/f/')[1];
+          await utapi.deleteFiles(fileKey);
+        }
+
+        await db.user.update({
+          where: { id },
+          data: {
+            image: imageUrl,
+          },
+        });
+      } catch (error) {
+        console.error('Error updating user:', error);
+      }
 
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
       return { uploadedBy: metadata.userId };
