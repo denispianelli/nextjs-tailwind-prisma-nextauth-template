@@ -6,8 +6,6 @@ import fs from 'fs/promises';
 
 export async function deleteAccount(id: string) {
   try {
-    console.log('deleteAccount ~ id:', id);
-
     const user = await db.user.delete({
       where: { id },
     });
