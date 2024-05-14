@@ -5,6 +5,9 @@ import { cn } from '@/lib/utils';
 import { Header } from '@/components/page-header';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { NextSSRPlugin } from '@uploadthing/react/next-ssr-plugin';
+import { extractRouterConfig } from 'uploadthing/server';
+import { ourFileRouter } from './api/uploadthing/core';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -30,6 +33,7 @@ export default function RootLayout({
           fontSans.variable,
         )}
       >
+        <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
