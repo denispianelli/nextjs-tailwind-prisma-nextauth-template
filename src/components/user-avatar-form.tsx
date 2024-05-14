@@ -60,7 +60,7 @@ export function UserAvatarForm({ user }: { user: User }) {
     toast({
       variant: 'destructive',
       title: 'Error',
-      description: `${errorMessage}`,
+      description: `${errorMessage || error.message}`,
     });
   };
 
