@@ -10,7 +10,10 @@ import {
 } from './ui/card';
 import { useToast } from '@/components/ui/use-toast';
 
-import { removeUserAvatar } from '@/app/users/(settings)/profile/edit/_actions/avatar';
+import {
+  removeUserAvatar,
+  updateUserAvatar,
+} from '@/app/users/(settings)/profile/edit/_actions/avatar';
 
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
@@ -30,7 +33,12 @@ export function UserAvatarForm({ user }: { user: User }) {
 
   const router = useRouter();
 
-  const handleUploadClick = (res: any) => {
+  const handleUploadClick = async (res: any) => {
+    const userId = user.id;
+    const imageUrl = res[0].url;
+
+    await updateUserAvatar(userId, imageUrl);
+
     toast({
       title: 'Success',
       description: 'Avatar uploaded',
