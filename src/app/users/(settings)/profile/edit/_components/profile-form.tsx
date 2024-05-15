@@ -75,7 +75,7 @@ export function ProfileForm({ user }: { user: User }) {
                   )}
                 </div>
               </div>
-              <div className="w-2/4">
+              <div className="md:w-2/4">
                 <Label>Email</Label>
                 <Input
                   type="email"
