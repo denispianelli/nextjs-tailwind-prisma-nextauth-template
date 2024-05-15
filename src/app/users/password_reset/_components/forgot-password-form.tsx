@@ -7,9 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useFormState, useFormStatus } from 'react-dom';
 import { forgotPassword } from '@/app/users/password_reset/_actions/forgot-password';
 import { useEffect } from 'react';

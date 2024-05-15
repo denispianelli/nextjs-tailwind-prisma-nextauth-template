@@ -5,16 +5,6 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { sendMail } from '@/services/email-service';
 
-export async function checkUserExists(email: string) {
-  const user = await db.user.findUnique({
-    where: {
-      email,
-    },
-  });
-
-  return Boolean(user);
-}
-
 export async function resendOtp(email: string) {
   try {
     const user = await db.user.findUnique({

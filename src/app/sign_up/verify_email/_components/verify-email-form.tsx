@@ -29,11 +29,11 @@ import { Check } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useFormState } from 'react-dom';
 import { verifyOTP } from '@/app/sign_up/verify_email/_actions/verify-otp';
-import { Input } from './ui/input';
+import { Input } from '@/components/ui/input';
 import { useFormStatus } from 'react-dom';
 import { useEffect, useState } from 'react';
-import { resendOtp } from '@/app/_actions/users';
 import { useToast } from '@/components/ui/use-toast';
+import { resendOtp } from '@/app/sign_up/verify_email/_actions/resend-otp';
 
 const FormSchema = z.object({
   emailDisabled: z.string().email(),
@@ -172,13 +172,13 @@ export function VerifyEmailForm() {
           render={({ field }) => (
             <FormItem className="flex flex-col items-center justify-center space-y-4">
               {state?.errorMessage && (
-                <p className="flex items-center gap-2 rounded-md border border-destructive bg-red-50 p-2 text-sm text-destructive">
+                <p className="flex items-center gap-2 rounded-md border border-destructive bg-red-50 p-2 text-xs text-destructive">
                   <TriangleAlert size={16} />
                   {state.errorMessage}
                 </p>
               )}
               {state?.successMessage && (
-                <p className="border-success text-success flex items-center gap-2 rounded-md border bg-green-50 p-2 text-sm">
+                <p className="flex items-center gap-2 rounded-md border bg-green-50 p-2 text-sm text-green-800">
                   <Check size={16} />
                   {state.successMessage}
                 </p>

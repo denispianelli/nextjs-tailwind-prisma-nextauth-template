@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from './ui/card';
+} from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 
 import {
@@ -16,7 +16,7 @@ import {
 } from '@/app/users/(settings)/profile/edit/_actions/avatar';
 
 import { useRouter } from 'next/navigation';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { UploadButton } from '@/lib/utils';
 
 export type User = {
@@ -92,7 +92,7 @@ export function UserAvatarForm({ user }: { user: User }) {
         <CardFooter className="border-t px-6 py-4">
           <div className="flex gap-2">
             <UploadButton
-              className="ut-button:bg-primary ut-button:text-primary-foreground ut-button:py-2 ut-button:hover:bg-primary/90 ut-button:px-4 ut-button:h-10 ut-button:text-sm"
+              className="ut-button:h-10 ut-button:bg-primary ut-button:px-4 ut-button:py-2 ut-button:text-sm ut-button:text-primary-foreground ut-button:hover:bg-primary/90"
               endpoint="imageUploader"
               onClientUploadComplete={handleUploadClick}
               onUploadError={handleUploadError}

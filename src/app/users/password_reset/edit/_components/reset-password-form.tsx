@@ -7,9 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
 import { useFormState, useFormStatus } from 'react-dom';
@@ -52,7 +52,7 @@ export function ResetPasswordForm({ isTokenValid }: { isTokenValid: boolean }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [isTokenValid]);
 
   if (!isTokenValid) {
     const timer = setInterval(() => {

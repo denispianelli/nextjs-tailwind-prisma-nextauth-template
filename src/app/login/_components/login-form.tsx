@@ -13,7 +13,6 @@ import {
   GoogleSignIn,
   authenticate,
 } from '@/app/login/_actions/login';
-import { signIn } from '@/auth';
 
 export default function LoginForm() {
   const [state, dispatch] = useFormState(authenticate, undefined);
