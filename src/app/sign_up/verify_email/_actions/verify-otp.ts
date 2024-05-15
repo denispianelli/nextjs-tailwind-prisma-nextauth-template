@@ -120,6 +120,7 @@ export async function verifyOTP(prevState: verifyOTPState, formData: FormData) {
   }
 
   return {
-    successMessage: 'Your email has been verified. You can now log in.',
+    successMessage:
+      'Your email has been verified. Now redirecting to login page...',
   };
 }
