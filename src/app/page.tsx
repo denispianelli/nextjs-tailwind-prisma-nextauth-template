@@ -9,8 +9,7 @@ import { useState } from 'react';
 export default function Home() {
   const [copied, setCopied] = useState(false);
 
-  const text = `npx create-next-app -e
-	https://github.com/denispianelli/nextjs-tailwind-prisma-nextauth-template`;
+  const text = `npx create-next-app -e https://github.com/denispianelli/nextjs-tailwind-prisma-nextauth-template my-app`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(text);
@@ -30,6 +29,7 @@ export default function Home() {
           {' '}
           ~ npx create-next-app -e
           https://github.com/denispianelli/nextjs-tailwind-prisma-nextauth-template
+          my-app
           <Button variant="default" onClick={copyToClipboard} className="ml-4">
             <Copy
               className={clsx('h-4 w-4 ease-in-out', {
