@@ -1,9 +1,9 @@
 import { auth } from '@/auth';
-import { DeleteAccount } from '@/components/delete-account';
-import { ProfileForm } from '@/components/profile-form';
-import { UserAvatarForm } from '@/components/user-avatar-form';
 import { getUser } from '@/lib/dal';
 import { notFound, redirect } from 'next/navigation';
+import { DeleteAccount } from './_components/delete-account';
+import { ProfileForm } from './_components/profile-form';
+import { UserAvatarForm } from './_components/user-avatar-form';
 
 export default async function Page() {
   const session = await auth();

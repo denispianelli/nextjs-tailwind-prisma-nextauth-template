@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
-import { ChangePasswordForm } from '@/components/change-password-form';
 import { getUser } from '@/lib/dal';
 import { notFound, redirect } from 'next/navigation';
+import { ChangePasswordForm } from './_components/change-password-form';
 
 export default async function Page() {
   const session = await auth();

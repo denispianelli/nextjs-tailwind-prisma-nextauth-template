@@ -1,6 +1,6 @@
-import { ResetPasswordForm } from '@/components/reset-password-form';
 import verifyToken from './_actions/verify-token';
 import { redirect } from 'next/navigation';
+import { ResetPasswordForm } from './_components/reset-password-form';
 
 interface PageProps {
   searchParams: { [key: string]: string | string[] | undefined };
