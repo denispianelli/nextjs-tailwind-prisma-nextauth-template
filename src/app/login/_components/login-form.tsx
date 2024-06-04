@@ -1,22 +1,62 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { CircleAlert } from 'lucide-react';
+import { CircleAlert, Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import {
   GitHubSignIn,
   GoogleSignIn,
   authenticate,
 } from '@/app/login/_actions/login';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormInput,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useForm, useFormState } from 'react-hook-form';
+
+import { useToast } from '@/components/ui/use-toast';
+
+const LoginFormSchema = z
+  .object({
+    email: z
+      .string()
+      .min(1, { message: 'Email is required.' })
+      .email({ message: 'Please enter a valid email.' }),
+    password: z.string().min(1, { message: 'Password is required.' }),
+  })
+  .required();
 
 export default function LoginForm() {
-  const [state, dispatch] = useFormState(authenticate, undefined);
   const { theme, resolvedTheme } = useTheme();
+  const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof LoginFormSchema>>({
+    resolver: zodResolver(LoginFormSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof LoginFormSchema>) {
+    const result = await authenticate(values);
+
+    if (result) {
+      toast({
+        description: <ToastTitle />,
+        variant: 'destructive',
+      });
+    }
+  }
 
   return (
     <div className="h-full w-full lg:grid lg:grid-cols-2">
@@ -28,78 +68,63 @@ export default function LoginForm() {
               Enter your email below to login to your account
             </p>
           </div>
-          <div
-            className="flex h-8 items-end space-x-1"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            {state?.message && (
-              <>
-                <CircleAlert className="h-5 w-5 text-red-500" />
-                <p className="text-sm text-red-500">{state?.message}</p>
-              </>
-            )}
-          </div>
           <div className="grid gap-4">
-            <form action={dispatch} className="grid gap-2">
-              <div className="grid gap-2">
-                <Label htmlFor="email">
-                  Email <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="email"
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="grid gap-2"
+              >
+                <FormField
+                  control={form.control}
                   name="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  autoComplete="email"
-                  variant={
-                    state?.errors?.email || state?.message
-                      ? 'destructive'
-                      : 'default'
-                  }
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Email <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <FormInput
+                          type="email"
+                          placeholder="m@example.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {state?.errors?.email ? (
-                  <p className="text-xs text-red-500">
-                    {state.errors.email.map((error) => (
-                      <span key={error}>{error}&nbsp;</span>
-                    ))}
-                  </p>
-                ) : (
-                  <span className="text-xs">&nbsp;</span>
-                )}
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">
-                    Password <span className="text-red-500">*</span>
-                  </Label>
-                  <Link
-                    href="/users/password_reset"
-                    className="ml-auto inline-block text-sm underline"
-                  >
-                    Forgot your password?
-                  </Link>
+                <div className="grid gap-2">
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center">
+                          <FormLabel>
+                            Password <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <Link
+                            href="/users/password_reset"
+                            className="ml-auto inline-block text-sm underline"
+                          >
+                            Forgot your password?
+                          </Link>
+                        </div>
+                        <FormControl>
+                          <FormInput
+                            type="password"
+                            placeholder="********"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  variant={
-                    state?.errors?.password || state?.message
-                      ? 'destructive'
-                      : 'default'
-                  }
-                />
-                {state?.errors?.password ? (
-                  <p className="text-xs text-red-500">
-                    {state.errors.password}
-                  </p>
-                ) : (
-                  <span className="text-xs">&nbsp;</span>
-                )}
-              </div>
-              <LoginButton />
-            </form>
+                <LoginButton />
+              </form>
+            </Form>
             <div className="mx-auto my-4 flex w-full items-center justify-evenly text-sm font-semibold text-gray-600 before:mr-4 before:block before:h-px before:flex-grow before:bg-stone-400 after:ml-4 after:block after:h-px after:flex-grow after:bg-stone-400">
               or
             </div>
@@ -153,11 +178,29 @@ export default function LoginForm() {
 }
 
 function LoginButton() {
-  const { pending } = useFormStatus();
+  const { isSubmitting } = useFormState();
 
   return (
-    <Button type="submit" className="w-full" aria-disabled={pending}>
-      Login
+    <Button type="submit" className="w-full" aria-disabled={isSubmitting}>
+      {isSubmitting ? (
+        <>
+          <Loader2 className="mr-2 size-6 animate-spin" />
+          Login
+        </>
+      ) : (
+        'Login'
+      )}
     </Button>
+  );
+}
+
+export { LoginFormSchema };
+
+function ToastTitle() {
+  return (
+    <div className="flex w-full items-center gap-2">
+      <CircleAlert />
+      <p>Invalid credentials</p>
+    </div>
   );
 }
