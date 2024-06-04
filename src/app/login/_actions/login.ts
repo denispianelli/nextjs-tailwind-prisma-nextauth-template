@@ -5,10 +5,12 @@ import { signIn } from '@/auth';
 import db from '@/db/prisma';
 import { redirect } from 'next/navigation';
 
-export async function authenticate(loginForm: {
+type LoginForm = {
   email: string;
   password: string;
-}) {
+};
+
+export async function authenticate(loginForm: LoginForm) {
   const { email } = loginForm;
 
   try {

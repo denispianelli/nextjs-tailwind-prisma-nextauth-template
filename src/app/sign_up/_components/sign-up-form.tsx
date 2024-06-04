@@ -10,36 +10,95 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import Image from 'next/image';
-import { useTheme } from 'next-themes';
-import { useFormState, useFormStatus } from 'react-dom';
 import { useState } from 'react';
 import { isEmailAvailable, signup } from '@/app/sign_up/_actions/sign-up';
 import { Loader2 } from 'lucide-react';
 
 import { useDebouncedCallback } from 'use-debounce';
-import { GitHubSignIn, GoogleSignIn } from '@/app/login/_actions/login';
+import OAuthProviders from '@/components/oauth-providers';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormInput,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { z } from 'zod';
+import { useForm, useFormState } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const SignupFormSchema = z.object({
+  firstname: z
+    .string()
+    .min(2, { message: 'At least 2 characters.' })
+    .trim()
+    .optional()
+    .or(z.literal('')),
+  lastname: z
+    .string()
+    .min(2, { message: 'Name must be at least 2 characters long.' })
+    .trim()
+    .optional()
+    .or(z.literal('')),
+  email: z
+    .string()
+    .min(1, { message: 'Email is required.' })
+    .email({ message: 'Please enter a valid email.' })
+    .trim()
+    .refine(
+      async (email) => {
+        const available = await isEmailAvailable(email);
+        return available;
+      },
+      {
+        message: 'Email already in use',
+      },
+    ),
+  password: z
+    .string()
+    .min(1, { message: 'Password is required.' })
+    .min(8, { message: 'Be at least 8 characters long.' })
+    .regex(/[a-zA-Z]/, { message: 'Contain at least one letter.' })
+    .regex(/[0-9]/, { message: 'Contain at least one number.' })
+    .regex(/[^\w]/, {
+      message: 'Contain at least one special character.',
+    })
+    .trim(),
+});
 
 export function SignUpForm() {
-  const [state, action] = useFormState(signup, undefined);
-  const { theme, resolvedTheme } = useTheme();
-
-  const [emailInput, setEmailInput] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
   const [isEmailFree, setIsEmailFree] = useState(true);
 
-  const handleEmailChange = useDebouncedCallback((term) => {
-    setEmailInput(term);
-    isEmailAvailable(term).then((available) => {
+  const form = useForm<z.infer<typeof SignupFormSchema>>({
+    resolver: zodResolver(SignupFormSchema),
+    defaultValues: {
+      firstname: '',
+      lastname: '',
+      email: '',
+      password: '',
+    },
+  });
+
+  const email = form.watch('email');
+
+  const handleEmailChange = useDebouncedCallback(() => {
+    isEmailAvailable(email).then((available) => {
       if (!available) {
         setIsEmailFree(false);
+        form.setError('email', {
+          message: 'Email already in use',
+        });
       } else {
         setIsEmailFree(true);
       }
     });
   }, 300);
+
+  async function onSubmit(values: z.infer<typeof SignupFormSchema>) {
+    await signup(values);
+  }
 
   return (
     <Card className="mx-auto max-w-sm">
@@ -51,146 +110,96 @@ export function SignUpForm() {
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
-          <form action={action} className="grid gap-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="firstname">
-                  First name{' '}
-                  <span className="text-xs text-gray-400">(optional)</span>
-                </Label>
-                <Input
-                  id="firstname"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-2">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
                   name="firstname"
-                  placeholder="Max"
-                  variant={state?.errors?.firstname ? 'destructive' : 'default'}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        First name{' '}
+                        <span className="text-xs text-gray-400">
+                          (optional)
+                        </span>
+                      </FormLabel>
+                      <FormControl>
+                        <FormInput placeholder="Max" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {state?.errors?.firstname ? (
-                  <p className="text-xs text-destructive">
-                    {state.errors.firstname}
-                  </p>
-                ) : (
-                  <span className="text-xs">&nbsp;</span>
-                )}
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="lastname">
-                  Last name{' '}
-                  <span className="text-xs text-gray-400">(optional)</span>
-                </Label>
-                <Input
-                  id="lastname"
+                <FormField
+                  control={form.control}
                   name="lastname"
-                  placeholder="Robinson"
-                  variant={state?.errors?.lastname ? 'destructive' : 'default'}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Last name{' '}
+                        <span className="text-xs text-gray-400">
+                          (optional)
+                        </span>
+                      </FormLabel>
+                      <FormControl>
+                        <FormInput placeholder="Robinson" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {state?.errors?.lastname ? (
-                  <p className="text-xs text-destructive">
-                    {state.errors.lastname}
-                  </p>
-                ) : (
-                  <span className="text-xs">&nbsp;</span>
-                )}
               </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">
-                Email <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="email"
+              <FormField
+                control={form.control}
                 name="email"
-                type="email"
-                placeholder="m@example.com"
-                autoComplete="email"
-                onChange={(e) => handleEmailChange(e.target.value)}
-                variant={
-                  state?.errors?.email || !isEmailFree
-                    ? 'destructive'
-                    : 'default'
-                }
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Email <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <FormInput
+                        type="email"
+                        autoComplete="email"
+                        placeholder="m@exemple.com"
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleEmailChange();
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {state?.errors?.email || state?.message || !isEmailFree ? (
-                <p className="text-xs text-red-500">
-                  {state?.errors?.email ||
-                    state?.message ||
-                    'Email already in use.'}{' '}
-                </p>
-              ) : (
-                <span className="text-xs">&nbsp;</span>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">
-                Password <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                onChange={(e) => setPasswordInput(e.target.value)}
-                id="password"
+              <FormField
+                control={form.control}
                 name="password"
-                type="password"
-                variant={state?.errors?.password ? 'destructive' : 'default'}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Password <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <FormInput
+                        type="password"
+                        autoComplete="password"
+                        placeholder="********"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <ul className="list-inside list-disc text-xs">
-                <p className="mb-1">Your password must:</p>
-                {renderValidationMessage(
-                  'Be at least 8 characters long',
-                  passwordInput,
-                  passwordInput.length >= 8,
-                )}
-                {renderValidationMessage(
-                  'Contain at least one letter',
-                  passwordInput,
-                  /[a-zA-Z]/.test(passwordInput),
-                )}
-                {renderValidationMessage(
-                  'Contain at least one number',
-                  passwordInput,
-                  /\d/.test(passwordInput),
-                )}
-                {renderValidationMessage(
-                  'Contain at least one special character',
-                  passwordInput,
-                  /[^\w]/.test(passwordInput),
-                )}
-                {state?.errors?.password?.includes('Password is required.') ? (
-                  <p className="text-red-500">Password is required.</p>
-                ) : (
-                  <p>&nbsp;</p>
-                )}
-              </ul>
-            </div>
-            <SignUpButton isEmailFree={isEmailFree} />
-          </form>
+              <SignUpButton isEmailFree={isEmailFree} />
+            </form>
+          </Form>
           <div className="mx-auto my-4 flex w-full items-center justify-evenly text-sm font-semibold text-gray-600 before:mr-4 before:block before:h-px before:flex-grow before:bg-stone-400 after:ml-4 after:block after:h-px after:flex-grow after:bg-stone-400">
             or
           </div>
-          <form action={GoogleSignIn}>
-            <Button type="submit" variant="outline" className="w-full gap-3">
-              <Image
-                src="/icons/Google__G__logo.svg"
-                alt="Google"
-                width="24"
-                height="24"
-                priority
-              />
-              Login with Google
-            </Button>
-          </form>{' '}
-          <form action={GitHubSignIn}>
-            <Button variant="outline" className="w-full gap-3">
-              <Image
-                src={
-                  theme === 'dark' || resolvedTheme === 'dark'
-                    ? '/icons/github-mark-white.svg'
-                    : '/icons/github-mark.svg'
-                }
-                alt="Google"
-                width="24"
-                height="24"
-              />
-              Login with Github
-            </Button>
-          </form>
+          <OAuthProviders />
         </div>
         <div className="mt-4 text-center text-sm">
           Already have an account?{' '}
@@ -203,30 +212,16 @@ export function SignUpForm() {
   );
 }
 
-function renderValidationMessage(
-  message: string,
-  input: string,
-  isValid: boolean,
-) {
-  return input === '' || input === null ? (
-    <li className="ml-2">{message}</li>
-  ) : (
-    <li className={isValid ? 'ml-2 text-green-500' : 'ml-2 text-red-500'}>
-      {' '}
-      {message}
-    </li>
-  );
-}
-
 function SignUpButton({ isEmailFree }: { isEmailFree: boolean }) {
-  const { pending } = useFormStatus();
+  const { isSubmitting } = useFormState();
+
   return (
     <Button
       type="submit"
       className="w-full"
-      aria-disabled={pending || !isEmailFree}
+      aria-disabled={isSubmitting || !isEmailFree}
     >
-      {pending ? (
+      {isSubmitting ? (
         <Loader2 className="size-6 animate-spin"></Loader2>
       ) : (
         'Create an account'

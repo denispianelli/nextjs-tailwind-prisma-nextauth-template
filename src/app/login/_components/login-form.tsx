@@ -4,12 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CircleAlert, Loader2 } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import {
-  GitHubSignIn,
-  GoogleSignIn,
-  authenticate,
-} from '@/app/login/_actions/login';
+import { authenticate } from '@/app/login/_actions/login';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -24,6 +19,7 @@ import {
 import { useForm, useFormState } from 'react-hook-form';
 
 import { useToast } from '@/components/ui/use-toast';
+import OAuthProviders from '@/components/oauth-providers';
 
 const LoginFormSchema = z
   .object({
@@ -36,7 +32,6 @@ const LoginFormSchema = z
   .required();
 
 export default function LoginForm() {
-  const { theme, resolvedTheme } = useTheme();
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof LoginFormSchema>>({
@@ -52,8 +47,17 @@ export default function LoginForm() {
 
     if (result) {
       toast({
-        description: <ToastTitle />,
+        description: (
+          <div className="flex w-full items-center gap-2">
+            <CircleAlert />
+            <p>Invalid credentials</p>
+          </div>
+        ),
         variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Welcome back!',
       });
     }
   }
@@ -85,6 +89,7 @@ export default function LoginForm() {
                       <FormControl>
                         <FormInput
                           type="email"
+                          autoComplete="email"
                           placeholder="m@example.com"
                           {...field}
                         />
@@ -128,33 +133,7 @@ export default function LoginForm() {
             <div className="mx-auto my-4 flex w-full items-center justify-evenly text-sm font-semibold text-gray-600 before:mr-4 before:block before:h-px before:flex-grow before:bg-stone-400 after:ml-4 after:block after:h-px after:flex-grow after:bg-stone-400">
               or
             </div>
-            <form action={GoogleSignIn}>
-              <Button type="submit" variant="outline" className="w-full gap-3">
-                <Image
-                  src="/icons/Google__G__logo.svg"
-                  alt="Google"
-                  width="24"
-                  height="24"
-                  priority
-                />
-                Login with Google
-              </Button>
-            </form>{' '}
-            <form action={GitHubSignIn}>
-              <Button variant="outline" className="w-full gap-3">
-                <Image
-                  src={
-                    theme === 'dark' || resolvedTheme === 'dark'
-                      ? '/icons/github-mark-white.svg'
-                      : '/icons/github-mark.svg'
-                  }
-                  alt="Google"
-                  width="24"
-                  height="24"
-                />
-                Login with Github
-              </Button>
-            </form>
+            <OAuthProviders />
           </div>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
@@ -195,12 +174,3 @@ function LoginButton() {
 }
 
 export { LoginFormSchema };
-
-function ToastTitle() {
-  return (
-    <div className="flex w-full items-center gap-2">
-      <CircleAlert />
-      <p>Invalid credentials</p>
-    </div>
-  );
-}

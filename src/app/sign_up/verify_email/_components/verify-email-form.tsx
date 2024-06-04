@@ -111,6 +111,7 @@ export function VerifyEmailForm() {
         >
           Verify your email
         </FormLabel>
+
         <div className="mb-6 flex items-center gap-1">
           <FormField
             control={form.control}
@@ -140,31 +141,15 @@ export function VerifyEmailForm() {
             type="button"
             variant="secondary"
             size="icon"
-            onClick={() => router.push('/sign-up')}
+            onClick={() => router.push('/sign_up')}
           >
             {' '}
             <PenLine size={16} />
           </Button>
         </div>
-
-        <div>
-          <p
-            className={clsx('text-xs font-medium', {
-              'text-[#868B94]': !codeLinkAvailable,
-            })}
-          >
-            Did not receive a code?
-            <Button
-              type="button"
-              className="px-1 text-xs "
-              variant="link"
-              disabled={!codeLinkAvailable}
-              onClick={handleSendNewCodeButtonClick}
-            >
-              Send a new one{codeLinkAvailable ? '' : ` in ${counter}s`}
-            </Button>
-          </p>
-        </div>
+        <FormDescription className="text-center">
+          Please enter the verification code sent to your email.
+        </FormDescription>
 
         <FormField
           control={form.control}
@@ -230,9 +215,7 @@ export function VerifyEmailForm() {
                   </InputOTPGroup>
                 </InputOTP>
               </FormControl>
-              <FormDescription className="text-center">
-                Please enter the verification code sent to your email.
-              </FormDescription>
+
               {state?.errors?.pin ? (
                 <p className="text-sm text-destructive">{state.errors.pin}</p>
               ) : (
@@ -242,6 +225,24 @@ export function VerifyEmailForm() {
             </FormItem>
           )}
         />
+        <div>
+          <p
+            className={clsx('text-xs font-medium', {
+              'text-[#868B94]': !codeLinkAvailable,
+            })}
+          >
+            Did not receive a code?
+            <Button
+              type="button"
+              className="px-1 text-xs "
+              variant="link"
+              disabled={!codeLinkAvailable}
+              onClick={handleSendNewCodeButtonClick}
+            >
+              Send a new one{codeLinkAvailable ? '' : ` in ${counter}s`}
+            </Button>
+          </p>
+        </div>
         <VerifyOtpButton />
       </form>
     </Form>

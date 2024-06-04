@@ -15,8 +15,7 @@ export async function sendMail(code: string, email: string) {
   const mailOptions = {
     from: 'from@email.fr',
     to: email,
-    subject: 'Test email',
-    text: 'This is a test email',
+    subject: 'Please verify your email',
     html: `<p>Your code : ${code}</p>`,
   };
 
