@@ -1,7 +1,6 @@
 'use client';
 
 import { updateProfile } from '@/app/users/(settings)/profile/edit/_actions/profile';
-import { useFormState, useFormStatus } from 'react-dom';
 import {
   Card,
   CardContent,
@@ -10,116 +9,137 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { User } from '@/lib/definitions';
+import { z } from 'zod';
+import { useForm, useFormState } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormInput,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
-export type User = {
-  id: string;
-  email: string | undefined;
-  name: string | null;
-  firstname: string | null;
-  lastname: string | null;
-  image: string | null;
-};
+const updateProfileSchema = z.object({
+  firstname: z
+    .string()
+    .min(2, { message: 'At least 2 characters.' })
+    .max(255)
+    .optional()
+    .or(z.literal('')),
+  lastname: z
+    .string()
+    .min(2, { message: 'At least 2 characters.' })
+    .max(255)
+    .optional()
+    .or(z.literal('')),
+  email: z.string().email(),
+});
 
 export function ProfileForm({ user }: { user: User }) {
-  const updateProfileWithId = updateProfile.bind(null, user.id);
-  const [state, action] = useFormState(updateProfileWithId, undefined);
+  const form = useForm<z.infer<typeof updateProfileSchema>>({
+    resolver: zodResolver(updateProfileSchema),
+    defaultValues: {
+      firstname: user.firstname || '',
+      lastname: user.lastname || '',
+      email: user.email,
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof updateProfileSchema>) {
+    const result = await updateProfile(values, user.id);
+    console.log('onSubmit ~ result:', result);
+
+    if (result?.message) {
+      form.setError('email', {
+        message: result.message,
+      });
+    }
+  }
 
   return (
     <div className="grid gap-6">
-      <form action={action} className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="firstname">First name</Label>
-                  <Input
-                    type="text"
-                    id="firstname"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
                     name="firstname"
-                    defaultValue={user.firstname ?? undefined}
-                    placeholder="Max"
-                    variant={
-                      state?.errors?.firstname ? 'destructive' : 'default'
-                    }
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First name</FormLabel>
+                        <FormControl>
+                          <FormInput {...field} placeholder="Max" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {state?.errors?.firstname && (
-                    <div className="text-xs text-destructive">
-                      {state.errors.firstname}
-                    </div>
-                  )}
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="lastname">Last name</Label>
-                  <Input
-                    type="text"
-                    id="lastname"
+                  <FormField
+                    control={form.control}
                     name="lastname"
-                    defaultValue={user.lastname ?? undefined}
-                    placeholder="Robinson"
-                    variant={
-                      state?.errors?.lastname ? 'destructive' : 'default'
-                    }
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last name</FormLabel>
+                        <FormControl>
+                          <FormInput {...field} placeholder="Robinson" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {state?.errors?.lastname && (
-                    <div className="text-xs text-destructive">
-                      {state.errors.lastname}
-                    </div>
-                  )}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <FormInput type="email" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
-              <div className="md:w-2/4">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  id="email"
-                  name="email"
-                  defaultValue={user.email}
-                  variant={
-                    state?.errors?.email || state?.message
-                      ? 'destructive'
-                      : 'default'
-                  }
-                />
-                {state?.errors?.email && (
-                  <div className="text-xs text-destructive">
-                    {state.errors.email}
-                  </div>
-                )}
-                {state?.message && (
-                  <div className="text-xs text-destructive">
-                    {state.message}
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="border-t px-6 py-4">
-            <UpdateProfileButton />
-          </CardFooter>
-        </Card>{' '}
-      </form>
+            </CardContent>
+            <CardFooter className="border-t px-6 py-4">
+              <UpdateProfileButton />
+            </CardFooter>
+          </Card>{' '}
+        </form>
+      </Form>
     </div>
   );
 }
 
 function UpdateProfileButton() {
-  const { pending } = useFormStatus();
+  const { isSubmitting } = useFormState();
   const router = useRouter();
+
   return (
     <Button
       type="submit"
-      aria-disabled={pending}
-      onClick={() => pending && router.refresh()}
+      aria-disabled={isSubmitting}
+      onClick={() => isSubmitting && router.refresh()}
     >
-      {pending ? <Loader2 className="size-6 animate-spin"></Loader2> : 'Save'}
+      {isSubmitting ? (
+        <Loader2 className="size-6 animate-spin"></Loader2>
+      ) : (
+        'Save'
+      )}
     </Button>
   );
 }
