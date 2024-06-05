@@ -7,32 +7,49 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useFormState, useFormStatus } from 'react-dom';
 import { forgotPassword } from '@/app/users/password_reset/_actions/forgot-password';
-import { useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { z } from 'zod';
+import { useForm, useFormState } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormInput,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+
+const ForgotPasswordFormSchema = z.object({
+  email: z
+    .string()
+    .min(1, { message: 'Email is required.' })
+    .email({ message: 'Please enter a valid email.' })
+    .trim(),
+});
 
 export function ForgotPasswordForm() {
-  const [state, action] = useFormState(forgotPassword, undefined);
-
   const { toast } = useToast();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (state?.message) {
-      toast({
-        description: state?.message,
-      });
-      setTimeout(() => {
-        router.push('/login');
-      }, 1000);
-    }
-  }, [state?.message, toast, router, state]); // Include 'state' in the dependency array
+  const form = useForm<z.infer<typeof ForgotPasswordFormSchema>>({
+    resolver: zodResolver(ForgotPasswordFormSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof ForgotPasswordFormSchema>) {
+    const result = await forgotPassword(values);
+
+    toast({
+      title: 'Password reset link sent',
+      description: result.message,
+    });
+  }
 
   return (
     <Card className="mx-auto max-w-sm">
@@ -44,26 +61,30 @@ export function ForgotPasswordForm() {
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
-          <form action={action} className="grid gap-2">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-2">
+              <FormField
+                control={form.control}
                 name="email"
-                required
-                autoComplete="email"
-                placeholder="	"
-                variant={state?.errors?.email ? 'destructive' : 'default'}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Email <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <FormInput
+                        type="email"
+                        placeholder="m@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {state?.errors?.email ? (
-                <p className="text-xs text-destructive">{state.errors.email}</p>
-              ) : (
-                <span className="text-xs">&nbsp;</span>
-              )}
-            </div>
-            <ForgotPasswordButton />
-          </form>
+              <ForgotPasswordButton />
+            </form>
+          </Form>
         </div>
       </CardContent>
     </Card>
@@ -71,10 +92,15 @@ export function ForgotPasswordForm() {
 }
 
 function ForgotPasswordButton() {
-  const { pending } = useFormStatus();
+  const { isSubmitting } = useFormState();
+
   return (
-    <Button type="submit" aria-disabled={pending}>
-      {pending ? <Loader2 className="size-6 animate-spin"></Loader2> : 'Submit'}
+    <Button type="submit" aria-disabled={isSubmitting}>
+      {isSubmitting ? (
+        <Loader2 className="size-6 animate-spin"></Loader2>
+      ) : (
+        'Submit'
+      )}
     </Button>
   );
 }
