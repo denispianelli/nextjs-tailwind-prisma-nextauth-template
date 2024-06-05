@@ -9,109 +9,175 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useFormState } from 'react-dom';
-import { useRef } from 'react';
+import { z } from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormInput,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useForm, useFormState } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { User } from '@/lib/definitions';
 
-export type User = {
-  id: string;
-  email: string | undefined;
-  name: string | null;
-  firstname: string | null;
-  lastname: string | null;
-  image: string | null;
-};
+const ChangePasswordSchema = z.object({
+  currentPassword: z
+    .string()
+    .min(1, { message: 'Password is required.' })
+    .trim(),
+  newPassword: z
+    .string()
+    .min(1, { message: 'Password is required.' })
+    .min(8, { message: 'Be at least 8 characters long.' })
+    .regex(/[a-zA-Z]/, { message: 'Contain at least one letter.' })
+    .regex(/[0-9]/, { message: 'Contain at least one number.' })
+    .regex(/[^\w]/, { message: 'Contain at least one special character.' })
+    .trim(),
+  confirmPassword: z
+    .string()
+    .min(1, { message: 'You must confirm your password.' })
+    .trim(),
+});
 
-export function ChangePasswordForm({ user }: { user: User }) {
-  const ref = useRef<HTMLFormElement>(null);
-  const changePasswordWithId = changePassword.bind(null, user.id);
-  const [state, action] = useFormState(changePasswordWithId, undefined);
+export default function ChangePasswordForm({ user }: { user: User }) {
+  const { toast } = useToast();
+  const form = useForm<z.infer<typeof ChangePasswordSchema>>({
+    resolver: zodResolver(ChangePasswordSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof ChangePasswordSchema>) {
+    const result = await changePassword(values, user.id);
+
+    if (result.errors) {
+      toast({
+        title: 'Error',
+        description:
+          result.errors.currentPassword || result.errors.confirmPassword,
+        variant: 'destructive',
+      });
+    }
+
+    if (result.message) {
+      toast({
+        title: 'Success',
+        description: result.message,
+        variant: 'success',
+      });
+      form.reset();
+    }
+  }
 
   return (
-    <form
-      ref={ref}
-      action={(formData) => {
-        action(formData);
-        if (ref.current) ref.current.reset();
-      }}
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle>Change your password</CardTitle>
-          <div className="text-muted-foreground">
-            <p className="mt-2 text-xs">Your password must:</p>
-            <ul className="list-inside list-disc text-xs">
-              <li className="ml-2">Be at least 8 characters long</li>
-              <li className="ml-2">Contain at least one letter</li>
-              <li className="ml-2">Contain at least one number</li>
-              <li className="ml-2">Contain at least one special character</li>
-            </ul>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid w-96 gap-6">
-            <div className="grid gap-2">
-              {state?.message && (
-                <div className="rounded-md border-2 border-green-700 bg-green-100 p-2 text-sm text-green-700">
-                  {state?.message}
-                </div>
-              )}
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <Input
-                id="currentPassword"
-                type="password"
+    <div className="grid gap-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Change your password</CardTitle>
+              <div className="text-muted-foreground">
+                <p className="mt-2 text-xs">Your password must:</p>
+                <ul className="list-inside list-disc text-xs">
+                  <li className="ml-2">Be at least 8 characters long</li>
+                  <li className="ml-2">Contain at least one letter</li>
+                  <li className="ml-2">Contain at least one number</li>
+                  <li className="ml-2">
+                    Contain at least one special character
+                  </li>
+                </ul>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <FormField
+                control={form.control}
                 name="currentPassword"
-                placeholder="Enter your current password"
-                variant={
-                  state?.errors?.currentPassword ? 'destructive' : 'default'
-                }
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Current Password <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <FormInput
+                        type="password"
+                        placeholder="Enter your current password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {state?.errors?.currentPassword && (
-                <div className="text-xs text-destructive">
-                  {state.errors.currentPassword}
-                </div>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <Input
-                id="newPassword"
-                type="password"
+              <FormField
+                control={form.control}
                 name="newPassword"
-                placeholder="Enter your new password"
-                variant={state?.errors?.newPassword ? 'destructive' : 'default'}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      New Password <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <FormInput
+                        type="password"
+                        placeholder="Enter your new password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {state?.errors?.newPassword &&
-                state.errors.newPassword.map((error) => (
-                  <div key={error} className="text-xs text-destructive">
-                    {error}
-                  </div>
-                ))}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
+              <FormField
+                control={form.control}
                 name="confirmPassword"
-                placeholder="Confirm your new password"
-                variant={
-                  state?.errors?.confirmPassword ? 'destructive' : 'default'
-                }
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Confirm Password <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <FormInput
+                        type="password"
+                        placeholder="Confirm your new password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {state?.errors?.confirmPassword && (
-                <div className="text-xs text-destructive">
-                  {state.errors.confirmPassword}
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button type="submit">Save</Button>
-        </CardFooter>
-      </Card>
-    </form>
+            </CardContent>
+            <CardFooter>
+              <ChangePasswordButton />
+            </CardFooter>
+          </Card>
+        </form>
+      </Form>
+    </div>
+  );
+}
+
+function ChangePasswordButton() {
+  const { isSubmitting } = useFormState();
+
+  return (
+    <Button type="submit" aria-disabled={isSubmitting}>
+      {isSubmitting ? (
+        <>
+          <Loader2 className="mr-2 size-6 animate-spin" />
+          Save
+        </>
+      ) : (
+        'Save'
+      )}
+    </Button>
   );
 }
