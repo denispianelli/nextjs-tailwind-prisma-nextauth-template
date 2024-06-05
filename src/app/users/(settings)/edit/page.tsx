@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { getUser } from '@/lib/dal';
 import { notFound, redirect } from 'next/navigation';
-import { ChangePasswordForm } from './_components/change-password-form';
+import ChangePasswordForm from './_components/change-password-form';
 
 export default async function Page() {
   const session = await auth();
@@ -15,9 +15,5 @@ export default async function Page() {
   if (!user) {
     return notFound();
   }
-  return (
-    <div>
-      <ChangePasswordForm user={user} />
-    </div>
-  );
+  return <ChangePasswordForm user={user} />;
 }
