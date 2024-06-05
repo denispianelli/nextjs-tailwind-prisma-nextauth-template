@@ -1,6 +1,6 @@
 import verifyToken from './_actions/verify-token';
 import { redirect } from 'next/navigation';
-import { ResetPasswordForm } from './_components/reset-password-form';
+import ResetPasswordForm from './_components/reset-password-form';
 
 interface PageProps {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -17,7 +17,7 @@ export default async function Page({ searchParams }: PageProps) {
   const isTokenValid = await verifyToken(token, email);
 
   return (
-    <main className="flex h-[calc(100vh-64px)] items-center">
+    <main className="flex h-[calc(100vh-64px)] items-center bg-muted/40">
       <ResetPasswordForm isTokenValid={isTokenValid} />
     </main>
   );

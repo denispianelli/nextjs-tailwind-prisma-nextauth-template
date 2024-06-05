@@ -7,77 +7,94 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
-import { useFormState, useFormStatus } from 'react-dom';
 import { resetPassword } from '@/app/users/password_reset/edit/_actions/reset-password';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
-export function ResetPasswordForm({ isTokenValid }: { isTokenValid: boolean }) {
-  const [state, action] = useFormState(resetPassword, undefined);
+import { z } from 'zod';
+import { useForm, useFormState } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormInput,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
-  const [countdown, setCountdown] = useState(3);
+const ResetPasswordFormSchema = z
+  .object({
+    email: z.string().email().trim(),
+    newPassword: z
+      .string()
+      .min(1, { message: 'Password is required.' })
+      .min(8, { message: 'Be at least 8 characters long.' })
+      .regex(/[a-zA-Z]/, { message: 'Contain at least one letter.' })
+      .regex(/[0-9]/, { message: 'Contain at least one number.' })
+      .regex(/[^\w]/, { message: 'Contain at least one special character.' })
+      .trim(),
+    confirmPassword: z
+      .string()
+      .min(1, { message: 'You must confirm your password.' })
+      .trim(),
+  })
+  .refine(
+    (values) => {
+      return values.newPassword === values.confirmPassword;
+    },
+    {
+      message: 'Passwords do not match.',
+      path: ['confirmPassword'],
+    },
+  );
 
-  const router = useRouter();
-
+export default function ResetPasswordForm({
+  isTokenValid,
+}: {
+  isTokenValid: boolean;
+}) {
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
+  const router = useRouter();
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (state?.message) {
-      toast({
-        title: 'Success',
-        description: state?.message,
-      });
-      setTimeout(() => {
-        router.push('/login');
-      }, 3000);
-    }
-  }, [router, state?.message, toast]);
+  const form = useForm<z.infer<typeof ResetPasswordFormSchema>>({
+    resolver: zodResolver(ResetPasswordFormSchema),
+    defaultValues: {
+      email: email ?? '',
+      newPassword: '',
+      confirmPassword: '',
+    },
+  });
 
-  useEffect(() => {
-    if (isTokenValid) {
-      return;
-    }
+  async function onSubmit(values: z.infer<typeof ResetPasswordFormSchema>) {
+    const result = await resetPassword(values);
 
-    const timer = setInterval(() => {
-      setCountdown((prevCountdown) => prevCountdown - 1);
-    }, 1000);
+    toast({
+      title: result.message,
+      variant: 'success',
+    });
 
-    return () => clearInterval(timer);
-  }, [isTokenValid]);
+    router.replace('/login');
+  }
 
   if (!isTokenValid) {
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-    clearInterval(timer);
-    setTimeout(() => {
-      router.push('/login');
-    }, 3000);
+    router.replace('/login');
 
-    return (
-      <Card className="mx-auto max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">Invalid link</CardTitle>
-          <CardDescription>
-            The link is invalid or has expired. Please request a new reset link
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Redirecting to login page in {countdown}...
-          </p>
-        </CardContent>
-      </Card>
-    );
+    toast({
+      title: 'Invalid or expired token',
+      variant: 'destructive',
+    });
+
+    return <Loader2 size={40} className="mx-auto animate-spin" />;
   }
 
   return (
@@ -95,48 +112,43 @@ export function ResetPasswordForm({ isTokenValid }: { isTokenValid: boolean }) {
           <li className="ml-2">Contain at least one special character</li>
         </ul>
         <div className="grid gap-4">
-          <form action={action} className="grid gap-2">
-            <input type="hidden" name="email" value={email ?? undefined} />
-            <div className="grid gap-2">
-              <Label htmlFor="newPassword">New password</Label>
-              <Input
-                id="newPassword"
-                type="password"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-2">
+              <input type="hidden" name="email" value={email ?? undefined} />
+              <FormField
+                control={form.control}
                 name="newPassword"
-                variant={state?.errors?.newPassword ? 'destructive' : 'default'}
-                placeholder=""
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      New password <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <FormInput type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            {state?.errors?.newPassword &&
-              state.errors.newPassword.map((error) => {
-                return (
-                  <p key={error} className="text-xs text-red-500">
-                    {error}
-                  </p>
-                );
-              })}
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">Confirm new password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
+              <FormField
+                control={form.control}
                 name="confirmPassword"
-                variant={
-                  state?.errors?.confirmPassword ? 'destructive' : 'default'
-                }
-                placeholder=""
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Confirm new password{' '}
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <FormInput type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {state?.errors?.confirmPassword &&
-                state.errors.confirmPassword.map((error) => {
-                  return (
-                    <p key={error} className="text-xs text-red-500">
-                      {error}
-                    </p>
-                  );
-                })}
-            </div>
-            <ResetPasswordButton />
-          </form>
+              <ResetPasswordButton />
+            </form>
+          </Form>
         </div>
       </CardContent>
     </Card>
@@ -144,10 +156,10 @@ export function ResetPasswordForm({ isTokenValid }: { isTokenValid: boolean }) {
 }
 
 function ResetPasswordButton() {
-  const { pending } = useFormStatus();
+  const { isSubmitting } = useFormState();
 
   return (
-    <Button type="submit" className="w-full" aria-disabled={pending}>
+    <Button type="submit" className="w-full" aria-disabled={isSubmitting}>
       Submit
     </Button>
   );

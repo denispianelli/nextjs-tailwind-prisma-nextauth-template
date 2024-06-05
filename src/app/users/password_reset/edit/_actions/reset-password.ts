@@ -1,75 +1,57 @@
 'use server';
 
 import db from '@/db/prisma';
-import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { notFound } from 'next/navigation';
 
-const ResetPasswordFormSchema = z.object({
-  email: z.string().email().trim(),
-  newPassword: z
-    .string()
-    .min(1, { message: 'Password is required.' })
-    .min(8, { message: 'Be at least 8 characters long.' })
-    .regex(/[a-zA-Z]/, { message: 'Contain at least one letter.' })
-    .regex(/[0-9]/, { message: 'Contain at least one number.' })
-    .regex(/[^\w]/, { message: 'Contain at least one special character.' })
-    .trim(),
-  confirmPassword: z
-    .string()
-    .min(1, { message: 'You must confirm your password.' })
-    .trim(),
-});
+type ResetPasswordForm = {
+  email: string;
+  newPassword: string;
+  confirmPassword: string;
+};
 
-export type resetPasswordFormState =
-  | {
-      errors?: {
-        password?: string[];
-        confirmPassword?: string[];
+export async function resetPassword(resetPasswordForm: ResetPasswordForm) {
+  const { email, newPassword, confirmPassword } = resetPasswordForm;
+
+  try {
+    const user = await db.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      notFound();
+    }
+
+    if (newPassword !== confirmPassword) {
+      return {
+        errors: {
+          confirmPassword: ['Passwords do not match.'],
+        },
       };
     }
-  | undefined;
 
-export async function resetPassword(
-  prevState: resetPasswordFormState,
-  formData: FormData,
-) {
-  const validatedFields = ResetPasswordFormSchema.safeParse({
-    email: formData.get('email'),
-    newPassword: formData.get('newPassword'),
-    confirmPassword: formData.get('confirmPassword'),
-  });
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
-  }
-
-  const { email, newPassword, confirmPassword } = validatedFields.data;
-
-  if (newPassword !== confirmPassword) {
-    return {
-      errors: {
-        confirmPassword: ['Passwords do not match.'],
+    await db.user.update({
+      where: {
+        email,
       },
+      data: {
+        password: hashedPassword,
+        emailVerified: true,
+        otp: null,
+        otp_expires: null,
+      },
+    });
+
+    return {
+      message: 'Your password has been successfully updated.',
+    };
+  } catch (error) {
+    return {
+      message: 'Database Error: Failed to update password.',
     };
   }
-
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-  await db.user.update({
-    where: {
-      email,
-    },
-    data: {
-      password: hashedPassword,
-      emailVerified: true,
-      otp: null,
-      otp_expires: null,
-    },
-  });
-
-  return {
-    message: 'Your password has been successfully updated.',
-  };
 }
