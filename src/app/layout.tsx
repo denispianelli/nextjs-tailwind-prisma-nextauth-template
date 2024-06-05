@@ -39,7 +39,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem={true}
           storageKey="theme"
-          disableTransitionOnChange={true}
+          disableTransitionOnChange
         >
           <Header />
           {children}
