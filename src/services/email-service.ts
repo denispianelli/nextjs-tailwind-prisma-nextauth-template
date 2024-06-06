@@ -32,7 +32,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     html: `
 		<p>Hello, ${email}</p>
 		<p>Click on the link below to reset your password</p>
-		<a href="http://localhost:3000/users/password_reset/edit?reset_password_token=${token}&email=${emailEncoded}">Reset password</a>
+		<a href="http://nextjs-tailwind-prisma-nextauth-template.vercel.app/users/password_reset/edit?reset_password_token=${token}&email=${emailEncoded}">Reset password</a>
 		<p>If you did not request a password reset, please ignore this email.</p>
 		`,
   };
