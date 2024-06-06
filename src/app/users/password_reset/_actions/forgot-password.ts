@@ -31,7 +31,7 @@ export async function forgotPassword(forgotPasswordForm: ForgotPasswordForm) {
   const token = uuidv4();
   const hashedToken = await bcrypt.hash(token, 10);
   const tokenExpiry = new Date();
-  tokenExpiry.setHours(tokenExpiry.getHours() + 1);
+  tokenExpiry.setHours(tokenExpiry.getHours() + 10);
 
   await db.user.update({
     where: {
