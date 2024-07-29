@@ -14,8 +14,6 @@ type SignupForm = {
 };
 
 export async function signup(signUpForm: SignupForm) {
-  console.log('signup ~ signUpForm:', signUpForm);
-
   const { email, password, firstname, lastname } = signUpForm;
 
   const hashedPassword = await bcrypt.hash(password, 10);
