@@ -13,7 +13,6 @@ export default async function Page({
   const session = await auth();
 
   const email = searchParams?.email;
-  console.log('email:', email);
 
   if (session || !email) {
     redirect('/');
