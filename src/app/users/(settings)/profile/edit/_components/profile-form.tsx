@@ -53,7 +53,6 @@ export function ProfileForm({ user }: { user: User }) {
 
   async function onSubmit(values: z.infer<typeof updateProfileSchema>) {
     const result = await updateProfile(values, user.id);
-    console.log('onSubmit ~ result:', result);
 
     if (result?.message) {
       form.setError('email', {
