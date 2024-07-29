@@ -44,16 +44,20 @@ export async function UserMenu() {
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
-        <form
-          action={async () => {
-            'use server';
-            await signOut();
-          }}
-        >
-          <DropdownMenuItem>
-            <LogOut className="mr-2 h-4 w-4" /> <button>Logout</button>
-          </DropdownMenuItem>
-        </form>
+        <DropdownMenuItem className="p-0">
+          <form
+            className="w-full"
+            action={async () => {
+              'use server';
+              await signOut();
+            }}
+          >
+            <button className="flex w-full items-center">
+              <LogOut className="mx-2 my-[6px] mr-2 h-4 w-4" />
+              Logout
+            </button>
+          </form>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
